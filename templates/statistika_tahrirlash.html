@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-{% load static %}
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Products</title>
+  <title>Statistika</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -38,13 +37,13 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0">Products</h1>
+            <h1 class="m-0">Statistikalar</h1>
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="{% url 'bolimlar' %}">Home</a></li>
-              <li class="breadcrumb-item active"><a href="{% url 'mahsulotlar' %}">Products</a></li>
-              <li class="breadcrumb-item"><a href="{% url 'logout' %}">Logout</a></li>
+              <li class="breadcrumb-item"><a href="{%url 'bolimlar'%}">Bosh sahifa</a></li>
+              <li class="breadcrumb-item active"><a href="{%url 'stats'%}">Statistikalar</a></li>
+              <li class="breadcrumb-item"><a href="{%url 'logout'%}">Logout</a></li>
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -56,33 +55,51 @@
           <!-- Modal Header -->
 
           <!-- Modal body -->
-          <form action="#" id="edit-product-form" method="post">{%csrf_token%}
-              <label for="edit-product-name">Mahsulot nomi:</label>
-              <input type="text" name="nom" value="{{product.nom}}" placeholder="Mahsulot nomi..." id="edit-product-name" class="form-control" required>
+          <form method="post" id="edit-product-form"  >
+              {%csrf_token%}
+              <label>Mahsulot:</label>
+              <select class="form-control"  name="mahsulot" required>
+                  <option value="{{sotuvlar.mahsulot.id}}">{{sotuvlar.mahsulot.nom}}({{sotuvlar.mahsulot.brend}})</option>
+                  {% for i in mahsulot%}
+                  <option  value="{{i.id}}">
+                      {{i.nom}}
+                      {{i.brend}}
+                  </option>
+                  {%endfor%}
+              </select>
                 <br>
-              <label for="edit-product-name">Brend nomi:</label>
-              <input type="text" name="brend" value="{{product.brend}}" placeholder="Brend nomi..." id="edit-product-brend" class="form-control" required>
+
+              <label>Mijoz:</label>
+              <select class="form-control"  name="mijoz" required>
+                  <option value="{{sotuvlar.mijoz.id}}">{{sotuvlar.mijoz.ism}}({{sotuvlar.mizoz.dokon}})</option>
+                  {% for i in mijoz%}
+                  <option value="{{i.id}}">
+                      {{i.ism}}
+                      {{i.dokon}}
+                  </option>
+                  {%endfor%}
+              </select>
+                <br>
+              <label>Miqdor:</label>
+              <input type="number" name="miqdor" value="{{sotuvlar.miqdor}}" id="edit-product-price" class="form-control" required>
               <br>
-              <label for="edit-product-name">Olingan narxi:</label>
-              <input type="number" name="narx1" value="{{product.narx1}}" placeholder="Mahsulotning olingan narxi..." id="edit-product-price" class="form-control" required>
+              <label>Summa:</label>
+              <input type="number" name="summa" value="{{sotuvlar.summa}}" id="edit-product-amount" class="form-control" required>
               <br>
-              <label for="edit-product-name">Sotiladigan narxi:</label>
-              <input type="number" name="narx2" value="{{product.narx2}}" placeholder="Mahsulotning sotiladigan narxi..." id="edit-product-price" class="form-control" required>
+              <label>Tolandi:</label>
+              <input type="number" name="tolandi" value="{{sotuvlar.tolandi}}" id="edit-product-amount1" class="form-control" required>
               <br>
-              <label for="edit-product-name">Miqdori:</label>
-              <input type="number" name="miqdor" value="{{product.miqdor}}" placeholder="Dona qoldi..." id="edit-product-amount" class="form-control" required>
-              <br>
-              <label for="edit-product-name">O'lchov turi:</label>
-              <input type="text" name="olchov" value="{{product.olchov}}" placeholder="O'lchov turi..." class="form-control" required>
+              <label>Qarz:</label>
+              <input type="number" name="qarz" value="{{sotuvlar.qarz}}" id="edit-product-amount2" class="form-control" required>
               <br>
 
           <!-- Modal footer -->
             <button type="submit" class="btn btn-success">Yangilash</button>
-            <a href="{% url 'mahsulotlar' %}"><button type="button" class="btn btn-danger" data-dismiss="modal">Yopish</button></a>
+              <a href="{%url 'stats'%}"><button type="button" class="btn btn-danger" data-dismiss="modal">Yopish</button></a>
 
       </form>
 
-  </div>
+
 
 <!-- ./wrapper -->
 
@@ -101,5 +118,7 @@
 <script src="/static/dist/js/demo.js"></script>
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
 <script src="/static/dist/js/pages/dashboard3.js"></script>
+  </div>
+</div>
 </body>
 </html>

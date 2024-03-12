@@ -1,4 +1,13 @@
 {%extends 'base.html'%}
+
+{%block bolim%} {{tarqatuvchi.bolim}} {%endblock%}
+
+{%block fullname%} {{tarqatuvchi.first_name}} {{tarqatuvchi.last_name}} {%endblock fullname%}
+
+{%block stats_active %} active {%endblock%}
+
+{%block title%} Statistikalar {%endblock%}
+
 {%block content%}
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -7,13 +16,11 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0">Stats</h1>
+            <h1 class="m-0">Statistikalar</h1>
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="{%url 'bolimlar'%}">Home</a></li>
-              <li class="breadcrumb-item active"><a href="{%url 'mijozlar'%}">Clients</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'logout' %}">Logout</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'logout' %}">Chiqish</a></li>
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -24,7 +31,15 @@
         <div class="card card-dark">
             <div class="card-header border-0">
                 <div class="d-flex justify-content-between">
-                  <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Statistika qo'shish</button>
+                  <button
+                          type="submit" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Statistika qo'shish
+                  </button>
+                    <h5>Summa: {{summa}} so'm</h5>
+                    <h5>Qarz: {{qarz}} so'm</h5>
+                  <form method="get">
+                      <input name="search" type="text" placeholder="Ism, nom, summa, ...">
+                      <button data-target="#myModal"  type="submit" data-toggle="modal" class="btn btn-primary">Qidirish</button>
+                  </form>
                 </div>
             </div>
             <div class="card-body">
@@ -32,28 +47,30 @@
                     <thead>
                         <tr>
                             <th scope="col" style="width: 15px">T/r</th>
-                            <th scope="col" style="width: 255px; text-align: center;">Product</th>
-                            <th scope="col" style="text-align: center;">Client</th>
+                            <th scope="col" style="width: 255px; text-align: center;">Mahsulot</th>
+                            <th scope="col" style="text-align: center;">Mijoz</th>
                             <th scope="col" style="text-align: center;">Sana</th>
                             <th scope="col" style="text-align: center;">Miqdor</th>
-                            <th scope="col" style="text-align: center;">Umumiy summa</th>
+                            <th scope="col" style="text-align: center;">Summa</th>
                             <th scope="col" style="text-align: center;">To'landi</th>
-                            <th scope="col" style="text-align: center;">Nasiya</th>
+                            <th scope="col" style="text-align: center;">Qarz</th>
                         </tr>
                     </thead>
                     <tbody>
+                    {%for s in sotuvlar%}
                         <tr>
-                            <th scope="row">1</th>
-                            <td>Product nomi, brend nomi</td>
-                            <td>Client ismi, do'koni nomi</td>
-                            <td>2022.06.13</td>
-                            <td>30</td>
-                            <td>1260000 so'm</td>
-                            <td>560000 so'm</td>
-                            <td>700000 so'm</td>
-                            <td><a href="#"><button type="submit" class="btn btn-danger" data-toggle="modal">Tahrirlash</button></a></td>
-                            <td><a href="#"><button type="submit" class="btn btn-danger"  style="background: blue" data-toggle="modal">Delete</button></a></td>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{s.mahsulot.nom}}<br>({{s.mahsulot.brend}})</td>
+                            <td>{{s.mijoz.ism}} <br>({{s.mijoz.dokon}})</td>
+                            <td>{{s.sana}}</td>
+                            <td>{{s.miqdor}}{{sotuv.mahsulot.olchov}}</td>
+                            <td>{{s.summa}} so'm</td>
+                            <td>{{s.tolandi}} so'm</td>
+                            <td>{{s.qarz}} so'm</td>
+                            <td><a href="/stats/tahrirlash/{{s.id}}/"><button type="submit" class="btn btn-warning" data-toggle="modal">Tahrirlash</button></a></td>
+                            <td><a href="/stats/ochirish/{{s.id}}/"><button type="submit" class="btn btn-danger"  data-toggle="modal">O'chirish</button></a></td>
                         </tr>
+                    {%endfor%}
                     </tbody>
                 </table>
             </div>
@@ -72,29 +89,38 @@
           </div>
     
           <!-- Modal body -->
-          <form action="#" id="new-product-form" method="post">{% csrf_token %}
+          <form  id="new-product-form" method="post">{% csrf_token %}
             <div class="modal-body">
-              <label for="product">Product:</label>
-             <input type="datetime-local" name="sana" placeholder="Sana" id="product" class="form-control" required>
+              <label>Mahsulotlar:</label>
+                <select class="form-control" name="mahsulot" >
+                    {%for m in mahsulotlar%}
+                    <option value="{{m.id}}">
+                        {{m.nom}} ({{m.brend}})
+                    </option>
+                    {%endfor%}
+                </select>
                 <br>
-              <label for="client">Client:</label>
-                <input type="datetime-local" name="sana" placeholder="Sana" id="client" class="form-control" required>
-              <br>
+              <label>Mijoz:</label>
+                <select class="form-control"  name="mijoz">
+                    {%for m in mijozlar%}
+                    <option value="{{m.id}}">
+                        {{m.ism}} ({{m.dokon}})
+                    </option>
+                    {%endfor%}
+                </select>
+                <br>
               <label for="sana">Sana:</label>
-              <input type="datetime-local" name="sana" placeholder="Sana" id="sana" class="form-control" required>
+              <input type="date" name="sana" placeholder="Sana" id="sana" class="form-control" required>
               <br>
                 <label for="miqdor">Miqdor:</label>
-              <input type="number" name="miqdor" placeholder="Miqdor" id="miqdor" class="form-control" required>
+              <input type="number" name="miqdor" placeholder="Miqdor..." id="miqdor" class="form-control" required>
               <br>
-              <label for="umumiy_summa">Umumiy summa:</label>
+              <label for="umumiy_summa">Summa:</label>
               <input type="number" name="summa" placeholder="Umumiy summa" id="umumiy_summa" class="form-control" required>
-              <br>
-                <label for="nasiya">Nasiya:</label>
-              <input type="number" name="nasiya" placeholder="Nasiya" id="nasiya" class="form-control" required>
-              <br>
+                <br>
                 <label for="tolandi">To'landi:</label>
-              <input type="number" name="tolandi" placeholder="To'landi" id="tolandi" class="form-control" required>
-              <br>
+                <input type="number" name="tolandi" placeholder="To'landi..." id="tolandi" class="form-control" required>
+                <br>
             </div>
     
           <!-- Modal footer -->

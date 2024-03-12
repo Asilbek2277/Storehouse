@@ -1,7 +1,13 @@
+import datetime
+
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.views import View
 
 from mainApp.models import *
+
+
+
 
 
 class BolimlarVeiw(View):
@@ -16,8 +22,14 @@ class MahsulotlarView(View):
     def get(self, request):
         if request.user.is_authenticated:
             mahsulotlar=Mahsulot.objects.filter(tarqatuvchi=request.user)
+            if request.GET.get('search'):
+                mahsulotlar=Mahsulot.objects.filter(
+                    Q(nom__contains=request.GET['search'])|
+                    Q(brend__contains=request.GET['search'])
+                )
             context={
-                'mahsulotlar': mahsulotlar
+                'mahsulotlar': mahsulotlar,
+                'tarqatuvchi': request.user
             }
             return render(request, 'mahsulotlar.html', context)
         return redirect('login')
@@ -47,8 +59,15 @@ class MijozView(View):
     def get(self, request):
         if request.user.is_authenticated:
             mijozlar = Mijoz.objects.filter(tarqatuvchi=request.user)
+            if request.GET.get('search'):
+                mijozlar=Mijoz.objects.filter(
+                    Q(ism__contains=request.GET.get('search'))|
+                    Q(dokon__contains=request.GET.get('search'))|
+                    Q(tel__contains=request.GET.get('search'))
+                )
             context={
-                'mijozlar': mijozlar
+                'mijozlar': mijozlar,
+                'tarqatuvchi': request.user
             }
             return render(request, 'mijozlar.html', context)
         return redirect('login')
@@ -60,6 +79,7 @@ class MijozView(View):
                 dokon=request.POST['dokon'],
                 tel=request.POST['tel'],
                 manzil=request.POST['manzil'],
+                qarz=request.POST['qarz'],
                 tarqatuvchi=request.user
             )
             return redirect('mijozlar')
@@ -92,7 +112,7 @@ class MahsulotTahrirlashView(View):
                     mahsulot.narx2=request.POST['narx2']
                     mahsulot.miqdor=request.POST['miqdor']
                     mahsulot.olchov=request.POST['olchov']
-                    mahsulot.sana=request.POST['sana']
+                    mahsulot.sana=datetime.datetime.now()
                     mahsulot.save()
 
                     return redirect('mahsulotlar')
@@ -111,7 +131,8 @@ class MijozlarniTahrirlashView(View):
     def get(self, request, pk):
         if request.user.is_authenticated:
             context={
-                'client': Mijoz.objects.get(id=pk)
+                'client': Mijoz.objects.get(id=pk),
+                'tarqatuvchi': request.user
             }
             return render(request, 'mijoz-tahrirlash.html', context)
         return redirect('login')
@@ -125,6 +146,7 @@ class MijozlarniTahrirlashView(View):
                     mijoz.dokon=request.POST['dokon']
                     mijoz.tel=request.POST['tel']
                     mijoz.manzil=request.POST['manzil']
+                    mijoz.qarz=request.POST['qarz']
                     mijoz.save()
 
                     return redirect('mijozlar')

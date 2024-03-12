@@ -1,4 +1,12 @@
 {%extends 'base.html'%}
+
+{%block bolim%} {{tarqatuvchi.bolim}} {%endblock%}
+{%block fullname%} {{tarqatuvchi.first_name}} {{tarqatuvchi.last_name}} {%endblock fullname%}
+
+{%block mijoz_active %} active {%endblock%}
+
+{%block title%} Mijozlar {%endblock%}
+
 {%block content%}
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -7,13 +15,11 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0">Clients</h1>
+            <h1 class="m-0">Mijozlar</h1>
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-             <li class="breadcrumb-item"><a href="{% url 'bolimlar' %}">Home</a></li>
-              <li class="breadcrumb-item active"><a href="{% url 'mijozlar' %}">Clients</a></li>
-              <li class="breadcrumb-item"><a href="{% url 'logout' %}">Logout</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'logout' %}">Chiqish</a></li>
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -25,6 +31,10 @@
             <div class="card-header border-0">
                 <div class="d-flex justify-content-between">
                     <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Mijoz qo'shish</button>
+                    <form method="get">
+                        <input name="search" type="text" placeholder="Ism, do'kon, telefon...." >
+                        <button class="btn btn-primary">Qidirish</button>
+                    </form>
                 </div>
             </div>
             <div class="card-body">
@@ -36,6 +46,7 @@
                             <th scope="col" style="text-align: center;">Do'kon nomi</th>
                             <th scope="col" style="text-align: center;">Telefon raqami</th>
                             <th scope="col" style="text-align: center;">Manzili</th>
+                            <th scope="col" style="text-align: center;">Qarz</th>
                             <th scope="col" style="text-align: center;"></th>
                         </tr>
                     </thead>
@@ -47,8 +58,9 @@
                             <td>{{m.dokon}}</td>
                             <td>{{m.tel}}</td>
                             <td>{{m.manzil}}</td>
-                            <td><a href="/main/mijoz_tahrirlash/{{m.id}}/"><button type="submit" class="btn btn-danger" data-toggle="modal">Tahrirlash</button></a></td>
-                            <td><a href="/main/mijoz_ochirish/{{m.id}}/"><button type="submit" style="background: blue ;" class="btn btn-danger" data-toggle="modal">Delete</button></a></td>
+                            <td>{{m.qarz}}</td>
+                            <td><a href="/main/mijoz_tahrirlash/{{m.id}}/"><button type="submit" class="btn btn-warning" data-toggle="modal">Tahrirlash</button></a></td>
+                            <td><a href="/main/mijoz_ochirish/{{m.id}}/"><button type="submit"  class="btn btn-danger" data-toggle="modal">O'chirish</button></a></td>
                         </tr>
                     {%endfor%}
                     </tbody>
@@ -81,6 +93,8 @@
               <br>
               <label for="new-product-name">Manzili:</label>
               <input type="text" name="manzil" placeholder="Mijoz manzili..." id="new-product-amount" class="form-control" required>
+              <br><label for="new-product-name">Qarz:</label>
+              <input type="text" name="qarz" placeholder="Mijoz qarzi..." id="new-product-amount1" class="form-control" required>
               <br>
             </div>
     
