@@ -7,24 +7,25 @@ from django.views import View
 
 from .models import *
 
+
 class StatsView(View):
     def get(self, request):
         if request.user.is_authenticated:
-            sotuvlar=Stats.objects.filter(tarqatuvchi=request.user)
-            mahsulotlar=Mahsulot.objects.filter(tarqatuvchi=request.user)
-            mijozlar=Mijoz.objects.filter(tarqatuvchi=request.user)
-            foyda=0
+            sotuvlar = Stats.objects.filter(tarqatuvchi=request.user)
+            mahsulotlar = Mahsulot.objects.filter(tarqatuvchi=request.user)
+            mijozlar = Mijoz.objects.filter(tarqatuvchi=request.user)
+            foyda = 0
             for sotuv in sotuvlar:
-                foyda+=(sotuv.mahsulot.narx2-sotuv.mahsulot.narx1)*sotuv.miqdor
+                foyda += (sotuv.mahsulot.narx2 - sotuv.mahsulot.narx1) * sotuv.miqdor
             if request.GET.get('search'):
-                sotuvlar=Stats.objects.filter(
-                    Q(mahsulot__nom__contains=request.GET['search'])|
-                    Q(mijoz__ism__contains=request.GET['search'])|
-                    Q(mijoz__dokon__contains=request.GET['search'])|
-                    Q(mahsulot__brend__contains=request.GET['search'])|
+                sotuvlar = Stats.objects.filter(
+                    Q(mahsulot__nom__contains=request.GET['search']) |
+                    Q(mijoz__ism__contains=request.GET['search']) |
+                    Q(mijoz__dokon__contains=request.GET['search']) |
+                    Q(mahsulot__brend__contains=request.GET['search']) |
                     Q(summa__contains=request.GET['search'])
                 )
-            context={
+            context = {
                 'sotuvlar': sotuvlar,
                 'tarqatuvchi': request.user,
                 'mahsulotlar': mahsulotlar,
@@ -39,36 +40,49 @@ class StatsView(View):
 
     def post(self, request):
         if request.user.is_authenticated:
-            mijoz=Mijoz.objects.get(id=request.POST['mijoz'])
-            if request.POST['summa']<request.POST['tolandi']:
-                return redirect('stats')
-            # m=Stats.objects.get(mahsulot__id=request.POST['mahsulot'])
-            # if int(request.POST['miqdor'])>m.mahsulot.miqdor :
-            #     return redirect('stats')
+            mijoz = Mijoz.objects.get(id=request.POST['mijoz'])
+
+            if request.POST['summa']:
+                summa=request.POST['summa']
+            else:
+                summa=float(request.POST['miqdor'])*Mahsulot.objects.get(id=request.POST['mahsulot']).narx2
+            if request.POST['tolandi']:
+                tolash=request.POST['tolandi']
+
+            else:
+                tolash=0
+            if summa < tolash:
+                return HttpResponse(
+                    """
+                    <h2>Kechirasiz Summa ustunidagi qiymat tolandi ustunidagi qiymatdan kichik bolishi mumkun emas!!!</h2>
+                    <a href='/stats/stats/'>Ortga</a>
+                    """
+                )
+
+
+
             Stats.objects.create(
                 mahsulot=Mahsulot.objects.get(id=request.POST['mahsulot']),
                 mijoz=mijoz,
                 sana=request.POST['sana'],
                 miqdor=request.POST['miqdor'],
-                summa=request.POST['summa'],
-                tolandi=request.POST['tolandi'],
-                qarz=int(request.POST['summa'])-int(request.POST['tolandi']),
+                summa=summa,
+                tolandi=tolash,
+                qarz=summa - tolash,
                 tarqatuvchi=request.user
             )
+            mahsulotlar = Mahsulot.objects.get(id=request.POST['mahsulot'])
+            mahsulotlar.miqdor -= int(request.POST['miqdor'])
+            mahsulotlar.save()
 
-            if  sum(Stats.objects.filter(tarqatuvchi=request.user,
-                                         mijoz__id=mijoz.id).values_list('qarz', flat=True))==0:
-                mijoz.qarz=0
+            if sum(Stats.objects.filter(tarqatuvchi=request.user,
+                                        mijoz__id=mijoz.id).values_list('qarz', flat=True)) is None:
+                mijoz.qarz = 0
                 mijoz.save()
 
-
-
-            mijoz.qarz=sum(Stats.objects.filter(tarqatuvchi=request.user, mijoz__id=mijoz.id).values_list('qarz', flat=True))
+            mijoz.qarz = sum(
+                Stats.objects.filter(tarqatuvchi=request.user, mijoz__id=mijoz.id).values_list('qarz', flat=True))
             mijoz.save()
-
-            # if stats.tolandi+stats.qarz==stats.summa:
-            #     return redirect('stats')
-            # return HttpResponse('Kechirasiz ')
             return redirect('stats')
         return redirect('login')
 
@@ -76,8 +90,8 @@ class StatsView(View):
 class Stats_TahrirlashView(View):
     def get(self, request, pk):
         if request.user.is_authenticated:
-            sotuvlar=Stats.objects.get(id=pk)
-            context={
+            sotuvlar = Stats.objects.get(id=pk)
+            context = {
                 'sotuvlar': sotuvlar,
                 'mahsulot': Mahsulot.objects.filter(tarqatuvchi=request.user),
                 'mijoz': Mijoz.objects.filter(tarqatuvchi=request.user)
@@ -89,39 +103,39 @@ class Stats_TahrirlashView(View):
     def post(self, request, pk):
         if request.user.is_authenticated:
             sotuvlar = Stats.objects.get(id=pk)
-            if sotuvlar.tarqatuvchi==request.user:
-                sotuvlar.mahsulot=Mahsulot.objects.get(id=request.POST['mahsulot'])
-                sotuvlar.mijoz=Mijoz.objects.get(id=request.POST['mijoz'])
-                sotuvlar.sana=datetime.datetime.now()
-                sotuvlar.miqdor=request.POST['miqdor']
-                sotuvlar.summa=request.POST['summa']
-                sotuvlar.tolandi=request.POST['tolandi']
+            miqdor1 = sotuvlar.miqdor
+            if sotuvlar.tarqatuvchi == request.user:
+                sotuvlar.mahsulot = Mahsulot.objects.get(id=request.POST['mahsulot'])
+                sotuvlar.mijoz = Mijoz.objects.get(id=request.POST['mijoz'])
+                sotuvlar.sana = datetime.datetime.now()
+                sotuvlar.miqdor = request.POST['miqdor']
+                sotuvlar.summa = request.POST['summa']
+                sotuvlar.tolandi = request.POST['tolandi']
                 sotuvlar.qarz = request.POST['qarz']
                 sotuvlar.save()
+
+                mahsulot = Mahsulot.objects.get(id=sotuvlar.mahsulot.id)
+                farq = float(request.POST['miqdor']) - miqdor1
+
+                mahsulot.miqdor -= farq
+                mahsulot.save()
 
                 return redirect('stats')
 
         return redirect('login')
-
-
-
 
 
 class SotuvDelete(View):
     def get(self, request, pk):
         if request.user.is_authenticated:
-            if Stats.objects.get(id=pk).tarqatuvchi==request.user:
-                sotuv=Stats.objects.get(id=pk)
-                mijoz=Mijoz.objects.get(id=sotuv.mijoz.id)
-                mijoz.qarz = sum(
-                    Stats.objects.filter(tarqatuvchi=request.user,
-                                         mijoz__id=mijoz.id).values_list('qarz', flat=True))
-                mijoz.save()
+            if Stats.objects.get(id=pk).tarqatuvchi == request.user:
+                sotuv = Stats.objects.get(id=pk)
+                mijoz = Mijoz.objects.get(id=sotuv.mijoz.id)
                 Stats.objects.get(id=pk).delete()
+
+                mijoz.qarz = sum(
+                    Stats.objects.filter(tarqatuvchi=request.user, mijoz__id=mijoz.id).values_list('qarz', flat=True)
+                )
+                mijoz.save()
                 return redirect('stats')
         return redirect('login')
-
-
-
-
-
